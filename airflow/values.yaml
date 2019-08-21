@@ -102,11 +102,11 @@ airflow:
       sshKeyFile:
       knownHostsFile:
       # Private Repo:
-      url: git@github.com:your/repo.git
+      # url: git@github.com:your/repo.git
       # Public Repo:
-      #url: https://github.com/your/repo
+      url: https://github.com/apache/airflow
       branch: master
-      subpath: .
+      subpath: airflow/example_dags
       ##
       ## Number of seconds to wait between git synchronizations
       wait: 60
