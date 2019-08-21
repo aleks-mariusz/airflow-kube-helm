@@ -169,7 +169,7 @@ data:
     # the key-value pairs to be given to worker pods.
     # the worker pods will be scheduled to the nodes of the specified key-value pairs.
     # should be supplied in the format: key = value
-    airflow = false
+    # airflow = false
 
     [kubernetes_secrets]
     AIRFLOW__CORE__SQL_ALCHEMY_CONN = {{ template "airflow.fullname" $ }}-env=AIRFLOW__CORE__SQL_ALCHEMY_CONN

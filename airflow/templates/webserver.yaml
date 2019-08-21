@@ -31,8 +31,8 @@ spec:
       securityContext:
         fsGroup: 1000
       restartPolicy: Always
-      nodeSelector:
-        airflow: "true"
+      # nodeSelector:
+      #   airflow: "true"
       initContainers:
       - name: "init-airflow"
         image: {{ .Values.airflow.image.repository }}:{{ .Values.airflow.image.tag }}

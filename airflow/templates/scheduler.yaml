@@ -28,8 +28,8 @@ spec:
       securityContext:
         fsGroup: 1000
       restartPolicy: Always
-      nodeSelector:
-        airflow: "true"
+      # nodeSelector:
+      #   airflow: "true"
       containers:
       {{- if not .Values.airflow.dags.persistence.enabled }}
       - name: git-sync
