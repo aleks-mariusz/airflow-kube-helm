@@ -6,6 +6,28 @@
 ##
 ## common settings and setting for the webserver
 airflow:
+  initdb: true
+  extraVolumeMounts: {}
+
+  connections: []
+
+  ## Add airflow variables
+  ## This should be a json string with your variables in it
+  ## Examples:
+  ##   variables: '{ "environment": "dev" }'
+  variables: {}
+
+  ## Add airflow ppols
+  ## This should be a json string with your pools in it
+  ## Examples:
+  ##   pools: '{ "example": { "description": "This is an example of a pool", "slots": 2 } }'
+  pools: {}
+  ## Additional volumeMounts to the main containers in the Scheduler, Worker and Web pods.
+  # - name: synchronised-dags
+  #   mountPath: /usr/local/airflow/dags
+  extraVolumes: []
+  extraConfigmapMounts: {}
+
   ##
   ## You will need to define your fernet key:
   ## Generate fernet_key with:
@@ -14,7 +36,7 @@ airflow:
   # Don't use this fernet key in production!
   fernet_key: "wEyDkTXKeSZNfNMhwrPMjSPY-E4UJEx8GtN5QV3nTkM="
   service:
-    type: NodePort
+    type: ClusterIP
   ##
   ## base image for webserver/scheduler/workers
   ## Note: If you want to use airflow HEAD (2.0dev), use the following image:
@@ -26,14 +48,14 @@ airflow:
   image:
     ##
     ## docker-airflow image
-    repository: dafrenchyman/docker-airflow
+    repository: aleksmariusz/docker-airflow
     ##
     ## image tag
-    tag: 1.10.3
+    tag: 1.10.9-test
     ##
     ## Image pull policy
     ## values: Always or IfNotPresent
-    pull_policy: Always
+    pull_policy: IfNotPresent
   ##
   ## Custom airflow configuration environment variables
   ## Use this to override any airflow setting settings defining environment variables in the
@@ -44,10 +66,16 @@ airflow:
   ##     AIRFLOW__CORE__EXPOSE_CONFIG: "True"
   ##     HTTP_PROXY: "http://proxy.mycompany.com:123"
   config:
+    AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: '15'
+    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{ "timeout_seconds": 50  }'
+    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{ "_request_timeout" : [60,300] }'
+
+    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{"_request_timeout":50 }'
+    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{ "_request_timeout": "50" }'
 
   logs:
     persistence:
-      accessMode: ReadWriteOnce
+      accessMode: ReadWriteMany
       ##
       ## Persistent Volume Storage Class
       ## If defined, storageClassName: <storageClass>
@@ -55,14 +83,14 @@ airflow:
       ## If undefined (the default) or set to null, no storageClassName spec is
       ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
       ##   GKE, AWS & OpenStack)
-      # storageClass: default
+      storageClass: px-airflow-logs
       ##
       ## Existing claim to use
-      existingClaim:
-      existingClaimSubPath:
+      #existingClaim:
+      #existingClaimSubPath:
       ##
       ## Persistant storage size request
-      size: 1Gi
+      size: 10Gi
 
   ##
   ## Configure DAGs deployment and update
@@ -72,10 +100,10 @@ airflow:
     persistence:
       ##
       ## enable persistance storage
-      enabled: false
+      enabled: true
       ##
       ## Volume access mode
-      accessMode: ReadWriteOnce
+      accessMode: ReadWriteMany
       ##
       ## Persistent Volume Storage Class
       ## If defined, storageClassName: <storageClass>
@@ -83,11 +111,11 @@ airflow:
       ## If undefined (the default) or set to null, no storageClassName spec is
       ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
       ##   GKE, AWS & OpenStack)
-      # storageClass: default
+      storageClass: px-airflow-dags
       ##
       ## Existing claim to use
-      existingClaim:
-      existingClaimSubPath:
+      #existingClaim:
+      #existingClaimSubPath:
       ##
       ## Persistant storage size request
       size: 1Gi
@@ -95,7 +123,15 @@ airflow:
       # The init-dags.sh is run in an init container before the scheduler and
       # webserver are started. Here you can add logic to initialize the dags
       # volume. Use a multiline string with bash commands.
-      init_dags:
+      init_dags: |
+        true
+#        VER=`airflow version |& awk 'END{print substr($NF,2)}'`
+#        curl -sLo - \
+#          https://github.com/apache/airflow/archive/$VER.tar.gz | tee \
+#            >(tar --strip-components 3 -C /usr/local/airflow/dags -zxf - airflow-$VER/airflow/example_dags) \
+#            >(tar --strip-components 4 -C /usr/local/airflow/dags -zxf - airflow-$VER/airflow/contrib/example_dags) \
+#        >/dev/null || true # always exit successfully
+
     ##
     ## Configure Git repository to fetch DAGs
     git:
@@ -266,7 +302,7 @@ postgresql:
     enabled: true
     ##
     ## Persistant class
-    # storageClass: classname
+    storageClass: px-airflow-pg
     ##
     ## Access mode:
     accessMode: ReadWriteOnce
