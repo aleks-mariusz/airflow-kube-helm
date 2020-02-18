@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ template "airflow.fullname" . }}-scheduler
@@ -9,7 +9,10 @@ metadata:
     heritage: {{ .Release.Service }}
 spec:
   replicas: 1
-  #serviceAccountName: {{ template "airflow.fullname" . }}-cluster-access
+  selector:
+    matchLabels:
+      app: {{ template "airflow.name" . }}-scheduler
+      release: {{ .Release.Name}}
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -33,7 +36,7 @@ spec:
       containers:
       {{- if not .Values.airflow.dags.persistence.enabled }}
       - name: git-sync
-        image: k8s.gcr.io/git-sync:v3.1.1
+        image: k8s.gcr.io/git-sync:v3.1.2
         imagePullPolicy: IfNotPresent
         securityContext:
           runAsUser: 65533 # git-sync user
