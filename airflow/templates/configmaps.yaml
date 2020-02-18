@@ -109,7 +109,15 @@ data:
     dags_folder = /usr/local/airflow/dags/repo/{{ .Values.airflow.dags.git.subpath }}
     {{- end }}
     base_log_folder = /usr/local/airflow/logs
+    # remote_logging = True
+    # remote_base_log_folder = gs://cyber-ai-storage/airflow/logs
+    # remote_log_conn_id = google_cloud_default
+
     executor = KubernetesExecutor
+    #executor = SequentialExecutor
+
+    fernet_key = $FERNET_KEY
+
     plugins_folder = /usr/local/airflow/plugins
     sql_alchemy_conn = $sql_alchemy_conn
 
@@ -128,6 +136,7 @@ data:
 
     # If True (default), worker pods will be deleted upon termination
     delete_worker_pods = True
+    env_from_secret_ref = {{ template "airflow.fullname" . }}-env
     {{- if .Values.airflow.dags.persistence.enabled }}
     {{- if .Values.airflow.dags.persistence.existingClaim }}
     dags_volume_claim = {{ .Values.airflow.dags.persistence.existingClaim }}
@@ -150,12 +159,18 @@ data:
     logs_volume_subpath =
     {{- end }}
 
+    # The name of the Kubernetes service account to be associated with airflow workers, if any.
+    # Service accounts are required for workers that require access to secrets or cluster resources.
+    # See the Kubernetes RBAC documentation for more:
+    #   https://kubernetes.io/docs/admin/authorization/rbac/
+    worker_service_account_name = {{ template "airflow.fullname" . }}-cluster-access
+ 
     in_cluster = true
     namespace = {{ .Release.Namespace }}
 
     # for cloning dags from git repositories into volumes: https://github.com/kubernetes/git-sync
     git_sync_container_repository = k8s.gcr.io/git-sync
-    git_sync_container_tag = v3.1.1
+    git_sync_container_tag = v3.1.2
     git_sync_init_container_name = git-sync-clone
 
     {{- if .Values.airflow.dags.git.sshKeyFile }}
@@ -164,6 +179,13 @@ data:
     {{- if .Values.airflow.dags.git.knownHostsFile }}
     git_ssh_known_hosts_configmap_name = {{ template "airflow.fullname" . }}-config
     {{- end }}
+
+    # Specifies the uid to run the first process of the worker pods containers as
+    #run_as_user = 
+    # Specifies a gid to associate with all containers in the worker pods
+    # if using a git_ssh_key_secret_name use an fs_group
+    # that allows for the key to be read, e.g. 65533
+    #fs_group = 1000
 
     [kubernetes_node_selectors]
     # the key-value pairs to be given to worker pods.
