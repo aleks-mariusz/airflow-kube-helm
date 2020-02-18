@@ -1,7 +1,7 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: {{ .Values.postgres.persistence.storageclass }}
+  name: "{{ .Values.postgresql.persistence.storageClass }}"
 provisioner: kubernetes.io/portworx-volume
 parameters:
   repl: "2"
@@ -10,7 +10,7 @@ allowVolumeExpansion: true
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: {{ .Values.airflow.logs.persistence.storageclass }}
+  name: "{{ .Values.airflow.logs.persistence.storageClass }}"
 provisioner: kubernetes.io/portworx-volume
 parameters:
   repl: "1"
@@ -20,7 +20,7 @@ allowVolumeExpansion: true
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: {{ .Values.airflow.dags.persistence.storageclass }}
+  name: "{{ .Values.airflow.dags.persistence.storageClass }}"
 provisioner: kubernetes.io/portworx-volume
 parameters:
   repl: "1"
