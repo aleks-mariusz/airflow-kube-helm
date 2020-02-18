@@ -67,11 +67,6 @@ airflow:
   ##     HTTP_PROXY: "http://proxy.mycompany.com:123"
   config:
     AIRFLOW__SCHEDULER__DAG_DIR_LIST_INTERVAL: '15'
-    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{ "timeout_seconds": 50  }'
-    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{ "_request_timeout" : [60,300] }'
-
-    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{"_request_timeout":50 }'
-    #AIRFLOW__KUBERNETES__KUBE_CLIENT_REQUEST_ARGS: '{ "_request_timeout": "50" }'
 
   logs:
     persistence:
@@ -124,13 +119,7 @@ airflow:
       # webserver are started. Here you can add logic to initialize the dags
       # volume. Use a multiline string with bash commands.
       init_dags: |
-        true
-#        VER=`airflow version |& awk 'END{print substr($NF,2)}'`
-#        curl -sLo - \
-#          https://github.com/apache/airflow/archive/$VER.tar.gz | tee \
-#            >(tar --strip-components 3 -C /usr/local/airflow/dags -zxf - airflow-$VER/airflow/example_dags) \
-#            >(tar --strip-components 4 -C /usr/local/airflow/dags -zxf - airflow-$VER/airflow/contrib/example_dags) \
-#        >/dev/null || true # always exit successfully
+        curl -sLo /usr/local/airflow/dags/portworx-demo.py 'https://gist.githubusercontent.com/aleks-mariusz/efd3a3a250438764e1e5cc87deef403a/raw/88e41313f9e064f995b8dd44fb7e77af1ce69d6a/airflow-portworx-demo.py'
 
     ##
     ## Configure Git repository to fetch DAGs
